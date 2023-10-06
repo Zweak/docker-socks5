@@ -1,74 +1,74 @@
 # Docker SOCKS5 Proxy
 
-Данный репозиторий позволит с минимальными затратами запустить свой собственный socks5 proxy-сервер.
+This repository will allow you to launch your own socks5 proxy server at minimal cost.
 
 ## Quickstart
 
-Ниже приведена инструкция по подъему SOCKS5 прокси. Единственное требование - наличие [белого](https://help.keenetic.net/hc/ru/articles/213965789-В-чем-отличие-белого-и-серого-IP-адреса-) IP. Если у Вас нет личного сервера, то внизу страницы приведена инструкция по настройке бесплатного сервера на AWS. Вы также можете использовать любого другого провайдера облачных серверов.
+Below are instructions for raising a SOCKS5 proxy. The only requirement is the presence of a [white](https://help.keenetic.net/hc/ru/articles/213965789-What-is-the-difference-between-white-and-gray-IP-address-) IP. If you do not have a personal server, then at the bottom of the page there are instructions for setting up a free server on AWS. You can also use any other cloud server provider.
 
-1. Установите Docker engine.
+1. Install Docker engine.
    
-   Выберите инструкцию для вашей ОС. Тестирование всей системы проводилось только для Ubuntu, но для других ОС все также должно работать с некоторыми модификациями приведенных ниже команд.
+   Select instructions for your OS. The entire system was tested on Ubuntu only, but for other OSes it should also work with some modifications to the commands below.
  
    1. [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce)
    2. [Mac](https://docs.docker.com/docker-for-mac/install/)
    3. [Windows](https://docs.docker.com/docker-for-windows/install/)
    
-2. Склонируйте данный репозиторий
+2. Clone Repo
 
    ```bash
    git clone https://github.com/elejke/docker-socks5.git
    cd docker-socks5
    ```
    
-3. Соберите Docker-образ
+3. Build a Docker image
 
    ```bash
    sudo docker build -t socks5 .
    ```
    
-   Если вы хотите использовать логин и пароль для своего сервера, то исправьте соответствующую строчку в [Dockerfile](Dockerfile#L4) на желаемую пару логин/пароль.
+   If you want to use a login and password for your server, then correct the corresponding line in [Dockerfile](Dockerfile#L4) to the desired login/password pair.
    
-4. Запустите Docker-образ:
+4. Run the Docker image:
 
    ```bash
    sudo docker run -d -p 80:1080 socks5
    ```
    
-   В данном случае прокси-сервер будет работать на порте 80. Вы можете изменить его на произвольный изменив соответствующее число при запуске Docker-контейнера. Обратите внимание, что выбранный порт должен быть открыт для доступа извне.
+   In this case, the proxy server will work on port 80. You can change it to an arbitrary one by changing the corresponding number when starting the Docker container. Please note that the selected port must be open for external access.
    
-   Если вы хотите использовать логин/пароль для своего прокси, то надо также добавить файл конфигурации в Docker-контейнер, что делается добавлением опции при запуске:
+   If you want to use a login/password for your proxy, you must also add a configuration file to the Docker container, which is done by adding an option at startup:
    
    ```bash
    sudo docker run -d -p 80:1080 -v ${PWD}/sockd.conf:/etc/sockd.conf socks5
    ```
    
-   При этом будут использованы логин/пароль указанные на шаге 3.
+   In this case, the login/password specified in step 3 will be used.
    
-5. Ваш прокси-сервер готов!
+5. Your proxy server is ready!
 
-   Используйте ваш IP-адрес, указанный на шаге 4 порт и логин/пароль (если заданы) в любом приложении!
+   Use your IP address, port specified in step 4 and login/password (if specified) in any application!
    
-   Для Telegram соответствующие настройки лежат в: 
+   For Telegram, the corresponding settings are in: 
    
    1. **iOS**: Settings - Data and Storage - Use Proxy
    2. **Desktop**: Settings - Privacy and Security - Use Proxy
    
-## Беслатный сервер на Amazon [AWS](https://aws.amazon.com)
+## Free server on Amazon [AWS](https://aws.amazon.com)
 
-1. Рагистрация AWS аккаунта с возможностью поднятия бесплатных серверов в течении 12 месяцев:
-   
-   1. Создайте аккаунт на https://aws.amazon.com/free/ выбрав тип аккаунт **Personal**. При использовании бесплатных серверов деньги с привязанной карты не будут расходоваться за исключением 1$, который будет снят при регистрации.
-   2. Войдите в созданный акканут с помощью: https://console.aws.amazon.com
-   3. Окончание регистрации и подтверждение возможности выделения ресурсов может занять до 24 часов. Проверить, закончилась она или нет можно в консоли: зайдите во вкладку **Services** и нажмите **EC2**
+1. Registering an AWS account with the ability to raise free servers for 12 months:
 
-2. Для запуска бесплатного сервера на **AWS EC2** зайдите во вкладку **Services > EC2** и нажмите **Launch Instance**, в левой части нажмите галочку возле надписи **Free tier only** и выберите в списке образ **Ubuntu Server 16.04 LTS (HVM), SSD Volume Type - ami-43a15f3e**
+   1. Create an account at https://aws.amazon.com/free/ by selecting the account type **Personal**. When using free servers, money from the linked card will not be spent, with the exception of $1, which will be withdrawn upon registration.
+   2. Log in to the created account using: https://console.aws.amazon.com
+   3. Registration may take up to 24 hours to complete and confirmation that resources can be allocated. You can check whether it has ended or not in the console: go to the **Services** tab and click **EC2**
+
+2. To launch a free server on **AWS EC2** go to the **Services > EC2** tab and click **Launch Instance**, on the left side click the checkbox next to **Free tier only** and select an image from the list * *Ubuntu Server 16.04 LTS (HVM), SSD Volume Type - ami-43a15f3e**
     
-   1. Выберите **t2.micro**
-   2. В верхней части экрана кликните **Configure Security Group**, нажмите **Add Rule** и в выпадающем списке выберите **HTTP** (ваш прокси сервер будет уже сконфигурирован для использования 80) 
-   3. Нажмите **Review and Launch > Launch**
+   1. Select **t2.micro**
+   2. At the top of the screen, click **Configure Security Group**, click **Add Rule** and select **HTTP** from the drop-down list (your proxy server will already be configured to use 80)
+   3. Click **Review and Launch > Launch**
       
-      1. В появившемся окне нажмите Create a new key pair,назовите её socks5 и нажмите Download Key Pair и Launch Instance.
-      2.  Поздравляю! Вы запустили сервер.
+      1. In the window that appears, click Create a new key pair, name it socks5 and click Download Key Pair and Launch Instance.
+      2. Congratulations! You have started the server.
 
-3. Зайдите во вкладку **Instances** в левой части консоли **EC2** и выберите запущенный сервер, нажмите клавишу **Connect** и следуйте указаниям (измените права ключа и подключитесь из консоли по **ssh**)
+3. Go to the **Instances** tab on the left side of the **EC2** console and select the running server, press the **Connect** button and follow the instructions (change the key permissions and connect from the console via **ssh**)
