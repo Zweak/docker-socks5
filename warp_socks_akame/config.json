@@ -1,0 +1,69 @@
+{
+    "inbounds": [
+      {
+        "listen": "0.0.0.0",
+        "port": 1310,
+        "protocol": "vmess",
+        "settings": {
+          "clients": [
+            {
+              "id": "generate_your_id",
+              "alterId": 0,
+              "security": "auto"
+            }
+          ]
+        },
+        "streamSettings": {
+          "network": "ws",
+          "wsSettings": {
+            "path": "/"
+          }
+        },
+        "mux": {
+          "enabled": true
+        },
+        "sniffing": {
+          "enabled": true,
+          "destOverride": ["http", "tls"]
+        }
+      }
+    ],
+    "outbounds": [
+      {
+        "protocol": "freedom",
+        "tag": "direct"
+      },
+      {
+        "protocol": "socks",
+        "tag": "warp",
+        "settings": {
+          "servers": [
+            {
+              "address": "warp",
+              "port": 1080
+            }
+          ]
+        }
+      }
+    ],
+    "dns": {
+      "servers": [
+        "1.1.1.1",
+        "1.0.0.1"
+      ]
+    },
+    "routing": {
+      "rules": [
+        {
+          "type": "field",
+          "ip": ["geoip:private"],
+          "outboundTag": "direct"
+        },
+        {
+          "type": "field",
+          "outboundTag": "warp",
+          "network": "udp,tcp"
+        }
+      ]
+    }
+  }
