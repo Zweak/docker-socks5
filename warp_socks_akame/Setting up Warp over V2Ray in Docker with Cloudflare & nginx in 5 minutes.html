@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<!-- saved from url=(0039)https://blog.akame.moe/warp-over-v2ray/ -->
+<html lang="en" class="auto-color"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes</title>
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="HandheldFriendly" content="True">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/screen.css">
+<link rel="icon" href="https://blog.akame.moe/content/images/size/w256h256/2023/06/logo.png" type="image/png">
+<link rel="canonical" href="https://blog.akame.moe/warp-over-v2ray/">
+<meta name="referrer" content="no-referrer-when-downgrade">
+<link rel="amphtml" href="https://blog.akame.moe/warp-over-v2ray/amp/">
+<meta property="og:site_name" content="akame&#39;s blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes">
+<meta property="og:description" content="Background
+
+
+At this moment, the government in Russia is trying to censor the internet, and some ISPs are trying to block VPN protocols, so it&#39;s literally impossible to browse the net without government supervision. Today, the ISPs of our team member blocked WireGuard and OpenVPN protocols, so it becomes clear,">
+<meta property="og:url" content="https://blog.akame.moe/warp-over-v2ray/">
+<meta property="og:image" content="https://images.unsplash.com/photo-1610337673044-720471f83677?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3wxMTc3M3wwfDF8c2VhcmNofDN8fGNlbnNvcnNoaXB8ZW58MHx8fHwxNjkxNDA5Nzg3fDA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=2000">
+<meta property="article:published_time" content="2023-08-07T12:30:24.000Z">
+<meta property="article:modified_time" content="2023-08-07T12:30:24.000Z">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="V2Ray">
+<meta property="article:tag" content="WARP">
+<meta property="article:tag" content="Censorship">
+<meta property="article:tag" content="VPN">
+<meta property="article:publisher" content="https://www.facebook.com/ghost">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes">
+<meta name="twitter:description" content="Background
+
+
+At this moment, the government in Russia is trying to censor the internet, and some ISPs are trying to block VPN protocols, so it&#39;s literally impossible to browse the net without government supervision. Today, the ISPs of our team member blocked WireGuard and OpenVPN protocols, so it becomes clear,">
+<meta name="twitter:url" content="https://blog.akame.moe/warp-over-v2ray/">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1610337673044-720471f83677?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3wxMTc3M3wwfDF8c2VhcmNofDN8fGNlbnNvcnNoaXB8ZW58MHx8fHwxNjkxNDA5Nzg3fDA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=2000">
+<meta name="twitter:label1" content="Written by">
+<meta name="twitter:data1" content="Eugene Rikhter">
+<meta name="twitter:label2" content="Filed under">
+<meta name="twitter:data2" content="Docker, V2Ray, WARP, Censorship, VPN">
+<meta name="twitter:site" content="@ghost">
+<meta property="og:image:width" content="2000">
+<meta property="og:image:height" content="1504">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "akame&#x27;s blog",
+        "url": "https://blog.akame.moe/",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://blog.akame.moe/content/images/size/w256h256/2023/06/logo.png",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Eugene Rikhter",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://blog.akame.moe/content/images/2023/06/photo_2023-06-28_05-33-59.jpg",
+            "width": 640,
+            "height": 640
+        },
+        "url": "https://blog.akame.moe/author/sunset/",
+        "sameAs": []
+    },
+    "headline": "Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes",
+    "url": "https://blog.akame.moe/warp-over-v2ray/",
+    "datePublished": "2023-08-07T12:30:24.000Z",
+    "dateModified": "2023-08-07T12:30:24.000Z",
+    "image": {
+        "@type": "ImageObject",
+        "url": "https://images.unsplash.com/photo-1610337673044-720471f83677?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDN8fGNlbnNvcnNoaXB8ZW58MHx8fHwxNjkxNDA5Nzg3fDA&ixlib=rb-4.0.3&q=80&w=2000",
+        "width": 2000,
+        "height": 1504
+    },
+    "keywords": "Docker, V2Ray, WARP, Censorship, VPN",
+    "description": "Background\n\n\nAt this moment, the government in Russia is trying to censor the internet, and some ISPs are trying to block VPN protocols, so it&#x27;s literally impossible to browse the net without government supervision. Today, the ISPs of our team member blocked WireGuard and OpenVPN protocols, so it becomes clear, that internet will be wholly censored in Russia in some time. Based on the experience of network censorship in China, we decided to set up V2Ray to be ready for possible blocking.\n\n\n\nHow ",
+    "mainEntityOfPage": "https://blog.akame.moe/warp-over-v2ray/"
+}
+    </script>
+<meta name="generator" content="Ghost 5.53">
+<link rel="alternate" type="application/rss+xml" title="akame&#39;s blog" href="https://blog.akame.moe/rss/">
+<script defer="" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/portal.min.js.download" data-i18n="false" data-ghost="https://blog.akame.moe/" data-key="100f5145c637f7d6926e303048" data-api="https://blog.akame.moe/ghost/api/content/" crossorigin="anonymous"></script><style id="gh-members-styles">.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}</style>
+<script defer="" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/sodo-search.min.js.download" data-key="100f5145c637f7d6926e303048" data-styles="https://cdn.jsdelivr.net/ghost/sodo-search@~1.1/umd/main.css" data-sodo-search="https://blog.akame.moe/" crossorigin="anonymous"></script>
+<link href="https://blog.akame.moe/webmentions/receive/" rel="webmention">
+<script defer="" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/cards.min.js.download"></script>
+<link rel="stylesheet" type="text/css" href="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/cards.min.css">
+<script defer="" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/member-attribution.min.js.download"></script><style>:root {--ghost-accent-color: #ff7070;}</style>
+<style>.gh-portal-account-header{display:flex;flex-direction:column;align-items:center;margin:0 0 32px}.gh-portal-account-header .gh-portal-avatar{margin:6px 0 8px!important}.gh-portal-account-data{margin-bottom:40px}footer.gh-portal-account-footer{display:flex}.gh-portal-account-footer.paid{margin-top:12px}.gh-portal-account-footermenu{display:flex;align-items:center;list-style:none;padding:0;margin:0}.gh-portal-account-footerright{display:flex;flex-grow:1;align-items:center;justify-content:flex-end}.gh-portal-account-footermenu li{margin-right:16px}.gh-portal-account-footermenu li:last-of-type{margin-right:0}.gh-portal-freeaccount-newsletter{display:flex;align-items:center;justify-content:space-between;margin-top:24px}.gh-portal-freeaccount-newsletter .label{display:flex;flex-direction:column;flex-grow:1}.gh-portal-free-ctatext{margin-top:-12px}.gh-portal-cancelcontinue-container{margin:24px 0 32px}.gh-portal-list-detail .gh-portal-email-notice{display:flex;align-items:center;gap:5px;margin-top:6px;color:var(--red);font-weight:500;font-size:1.25rem;letter-spacing:.2px}.gh-portal-email-notice-icon{width:20px;height:20px}.gh-portal-billing-button-loader{width:32px;height:32px;margin-right:-3px;opacity:.6}.gh-portal-product-icon{width:52px;margin-right:12px;border-radius:2px}.gh-portal-account-discountcontainer{position:relative;display:flex;align-items:center}.gh-portal-account-old-price{text-decoration:line-through;color:var(--grey9)!important}.gh-portal-account-tagicon{width:16px;height:16px;color:var(--brandcolor);margin-right:5px;z-index:999}@media (max-width: 390px){.gh-portal-account-footer{padding:0!important}}@media (max-width: 340px){.gh-portal-account-footer{padding:0!important;flex-wrap:wrap;gap:12px}.gh-portal-account-footer .gh-portal-account-footerright{justify-content:flex-start}}.gh-email-suppressed-page-title{margin-bottom:14px}.gh-email-suppressed-page-icon{display:block;width:38px;height:38px;margin:0 auto 18px}.gh-email-suppressed-page-text{padding:0 14px;text-align:center;color:var(--grey6)}.gh-email-faq-footer-text{color:var(--grey8)}.gh-portal-list-detail.email-newsletter .gh-email-faq-page-button{display:block;margin-top:3px}.accountEmail .gh-email-faq-page-button{margin-left:4px}.emailReceivingFAQ .gh-portal-btn-back,.emailReceivingFAQ .gh-portal-btn-back:hover{left:calc(6vmin - 14px)}.emailReceivingFAQ .gh-portal-closeicon-container{right:calc(6vmin - 20px)}@media (max-width: 480px){.emailReceivingFAQ .gh-portal-btn-back,.emailReceivingFAQ .gh-portal-btn-back:hover{left:16px}.emailReceivingFAQ .gh-portal-closeicon-container{right:24px}}.gh-email-faq-page-button{color:var(--brandcolor);cursor:pointer;background:none;transition:color linear .1s;font-size:1.45rem}</style><style>.App{text-align:center}.App-logo{height:40vmin;pointer-events:none}@media (prefers-reduced-motion: no-preference){.App-logo{animation:App-logo-spin infinite 20s linear}}.App-header{background-color:#282c34;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:calc(10px + 2vmin);color:#fff}.App-link{color:#61dafb}@keyframes App-logo-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style><style id="fit-vids-style">.fluid-width-video-container{flex-grow: 1;width:100%;}.fluid-width-video-wrapper{width:100%;position:relative;padding:0;}.fluid-width-video-wrapper iframe,.fluid-width-video-wrapper object,.fluid-width-video-wrapper embed {position:absolute;top:0;left:0;width:100%;height:100%;}</style></head>
+<body class="post-template tag-docker tag-v2ray tag-warp tag-censorship tag-vpn is-head-middle-logo has-cover is-dropdown-loaded">
+<div class="viewport">
+<header id="gh-head" class="gh-head outer">
+<div class="gh-head-inner inner">
+<div class="gh-head-brand">
+<a class="gh-head-logo no-image" href="https://blog.akame.moe/">
+akame's blog
+</a>
+<button class="gh-search gh-icon-btn" aria-label="Search this site" data-ghost-search=""><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></button>
+<button class="gh-burger"></button>
+</div>
+<nav class="gh-head-menu">
+<ul class="nav">
+<li class="nav-home"><a href="https://blog.akame.moe/">Home</a></li>
+</ul>
+</nav>
+<div class="gh-head-actions">
+<button class="gh-search gh-icon-btn" data-ghost-search=""><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></button>
+<div class="gh-head-members">
+<a class="gh-head-link gh-portal-close" href="https://blog.akame.moe/warp-over-v2ray/#/portal/signin" data-portal="signin">Sign in</a>
+<a class="gh-head-button gh-portal-close" href="https://blog.akame.moe/warp-over-v2ray/#/portal/signup" data-portal="signup">Subscribe</a>
+</div>
+</div>
+</div>
+</header>
+<div class="site-content">
+<main id="site-main" class="site-main">
+<article class="article post tag-docker tag-v2ray tag-warp tag-censorship tag-vpn ">
+<header class="article-header gh-canvas">
+<div class="article-tag post-card-tags">
+<span class="post-card-primary-tag">
+<a href="https://blog.akame.moe/tag/docker/">Docker</a>
+</span>
+</div>
+<h1 class="article-title">Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes</h1>
+<div class="article-byline">
+<section class="article-byline-content">
+<ul class="author-list">
+<li class="author-list-item">
+<a href="https://blog.akame.moe/author/sunset/" class="author-avatar">
+<img class="author-profile-image" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/photo_2023-06-28_05-33-59.jpg" alt="Eugene Rikhter">
+</a>
+</li>
+</ul>
+<div class="article-byline-meta">
+<h4 class="author-name"><a href="https://blog.akame.moe/author/sunset/">Eugene Rikhter</a></h4>
+<div class="byline-meta-content">
+<time class="byline-meta-date" datetime="2023-08-07">Aug 7, 2023</time>
+<span class="byline-reading-time"><span class="bull">•</span> 1 min read</span>
+</div>
+</div>
+</section>
+</div>
+<figure class="article-image">
+<img srcset="https://images.unsplash.com/photo-1610337673044-720471f83677?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3wxMTc3M3wwfDF8c2VhcmNofDN8fGNlbnNvcnNoaXB8ZW58MHx8fHwxNjkxNDA5Nzg3fDA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=300 300w,
+                            https://images.unsplash.com/photo-1610337673044-720471f83677?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3wxMTc3M3wwfDF8c2VhcmNofDN8fGNlbnNvcnNoaXB8ZW58MHx8fHwxNjkxNDA5Nzg3fDA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=600 600w,
+                            https://images.unsplash.com/photo-1610337673044-720471f83677?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3wxMTc3M3wwfDF8c2VhcmNofDN8fGNlbnNvcnNoaXB8ZW58MHx8fHwxNjkxNDA5Nzg3fDA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1000 1000w,
+                            https://images.unsplash.com/photo-1610337673044-720471f83677?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3wxMTc3M3wwfDF8c2VhcmNofDN8fGNlbnNvcnNoaXB8ZW58MHx8fHwxNjkxNDA5Nzg3fDA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=2000 2000w" sizes="(min-width: 1400px) 1400px, 92vw" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/photo-1610337673044-720471f83677" alt="Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes">
+<figcaption>Photo by <a href="https://unsplash.com/@lazycreekimages?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit">Michael Dziedzic</a> / <a href="https://unsplash.com/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit">Unsplash</a></figcaption>
+</figure>
+</header>
+<section class="gh-content gh-canvas">
+<h3 id="background">Background</h3>
+<p>At this moment, the government in Russia is trying to censor the internet, and some ISPs are trying to block VPN protocols, so it's literally impossible to browse the net without government supervision. Today, the ISPs of our team member blocked WireGuard and OpenVPN protocols, so it becomes clear, that internet will be wholly censored in Russia in some time. Based on the experience of network censorship in China, we decided to set up V2Ray to be ready for possible blocking.</p>
+<h3 id="how-do-we-do-this">How do we do this?</h3>
+<p>Based on a quick Google search, I found GitHub repo: <a href="https://github.com/v2fly/v2ray-core?ref=blog.akame.moe">v2fly/v2ray-core</a>, it can be launched in Docker and is easy to set up. To setup WARP proxy we used a container from <a href="https://blog.caomingjun.com/run-cloudflare-warp-in-docker/en/?ref=blog.akame.moe">this guide</a>, so the final configuration looks like this:</p>
+<script src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/c24de5b97b9978ce6086155fe5e0da71.js.download"></script><link rel="stylesheet" href="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/gist-embed-dc3feb7a9d65.css"><div id="gist123920615" class="gist">
+    <div class="gist-file" translate="no">
+      <div class="gist-data">
+        <div class="js-gist-file-update-container js-task-list-container file-box">
+  <div id="file-docker-compose-yml" class="file my-2">
+    
+    <div itemprop="text" class="Box-body p-0 blob-wrapper data type-yaml  ">
+
+        
+<div class="js-check-bidi js-blob-code-container blob-code-content">
+
+  <template class="js-file-alert-template"></template>
+<template class="js-line-alert-template"></template>
+
+  <table data-hpc="" class="highlight tab-size js-file-line-container js-code-nav-container js-tagsearch-file" data-tab-size="8" data-paste-markdown-skip="" data-tagsearch-lang="YAML" data-tagsearch-path="docker-compose.yml">
+        <tbody><tr>
+          <td id="file-docker-compose-yml-L1" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="1"></td>
+          <td id="file-docker-compose-yml-LC1" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">services</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L2" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="2"></td>
+          <td id="file-docker-compose-yml-LC2" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">v2ray</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L3" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="3"></td>
+          <td id="file-docker-compose-yml-LC3" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">image</span>: <span class="pl-s">v2fly/v2fly-core:v4.45.2</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L4" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="4"></td>
+          <td id="file-docker-compose-yml-LC4" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">restart</span>: <span class="pl-s">unless-stopped</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L5" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="5"></td>
+          <td id="file-docker-compose-yml-LC5" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">environment</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L6" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="6"></td>
+          <td id="file-docker-compose-yml-LC6" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">v2ray.vmess.aead.forced=false</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L7" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="7"></td>
+          <td id="file-docker-compose-yml-LC7" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">VIRTUAL_HOST=v2ray.akame.moe</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L8" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="8"></td>
+          <td id="file-docker-compose-yml-LC8" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">VIRTUAL_PORT=1310</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L9" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="9"></td>
+          <td id="file-docker-compose-yml-LC9" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">volumes</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L10" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="10"></td>
+          <td id="file-docker-compose-yml-LC10" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s"><span class="pl-pds">'</span>./config.json:/etc/v2ray/config.json:ro<span class="pl-pds">'</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L11" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="11"></td>
+          <td id="file-docker-compose-yml-LC11" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">ports</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L12" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="12"></td>
+          <td id="file-docker-compose-yml-LC12" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s"><span class="pl-pds">'</span>127.0.0.1:1310:1310<span class="pl-pds">'</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L13" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="13"></td>
+          <td id="file-docker-compose-yml-LC13" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">warp</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L14" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="14"></td>
+          <td id="file-docker-compose-yml-LC14" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">image</span>: <span class="pl-s">caomingjun/warp:latest</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L15" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="15"></td>
+          <td id="file-docker-compose-yml-LC15" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">restart</span>: <span class="pl-s">unless-stopped</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L16" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="16"></td>
+          <td id="file-docker-compose-yml-LC16" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">environment</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L17" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="17"></td>
+          <td id="file-docker-compose-yml-LC17" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">WARP_SLEEP=2</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L18" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="18"></td>
+          <td id="file-docker-compose-yml-LC18" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">WARP_LICENSE_KEY=a11A1aA1-A111aA1a-1Aaa111a</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L19" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="19"></td>
+          <td id="file-docker-compose-yml-LC19" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">cap_add</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L20" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="20"></td>
+          <td id="file-docker-compose-yml-LC20" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">NET_ADMIN</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L21" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="21"></td>
+          <td id="file-docker-compose-yml-LC21" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">sysctls</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L22" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="22"></td>
+          <td id="file-docker-compose-yml-LC22" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">net.ipv6.conf.all.disable_ipv6=0</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L23" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="23"></td>
+          <td id="file-docker-compose-yml-LC23" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">net.ipv4.conf.all.src_valid_mark=1</span></td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L24" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="24"></td>
+          <td id="file-docker-compose-yml-LC24" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">volumes</span>:</td>
+        </tr>
+        <tr>
+          <td id="file-docker-compose-yml-L25" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="25"></td>
+          <td id="file-docker-compose-yml-LC25" class="blob-code blob-code-inner js-file-line">      - <span class="pl-s">./data/warp:/var/lib/cloudflare-warp</span></td>
+        </tr>
+  </tbody></table>
+</div>
+
+
+    </div>
+
+  </div>
+</div>
+
+      </div>
+      <div class="gist-meta">
+        <a href="https://gist.github.com/notawho/c24de5b97b9978ce6086155fe5e0da71/raw/37da2c1c87141499dd2fc78f9351495cca05ef60/docker-compose.yml" style="float:right">view raw</a>
+        <a href="https://gist.github.com/notawho/c24de5b97b9978ce6086155fe5e0da71#file-docker-compose-yml">
+          docker-compose.yml
+        </a>
+        hosted with ❤ by <a class="Link--inTextBlock" href="https://github.com/">GitHub</a>
+      </div>
+    </div>
+</div>
+
+<p>If you plan to set up your own V2Ray, keep in mind to change <code>WARP_LICENSE_KEY</code> to yours to achieve a Warp Plus speed boost, if you don't have one - you can use our <a href="https://t.me/generatewarpplusbot?ref=blog.akame.moe">bot</a> to generate an unlimited Warp Plus key.</p>
+<p>The next thing we need to configure is V2Ray, here's my configuration, you need to change <code>settings.clients[0].id</code> to any UUID, I used <a href="https://www.uuidgenerator.net/version4?ref=blog.akame.moe">this</a> generator:</p>
+<script src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/c24de5b97b9978ce6086155fe5e0da71.js(1).download"></script><link rel="stylesheet" href="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/gist-embed-dc3feb7a9d65.css"><div id="gist123920615" class="gist">
+    <div class="gist-file" translate="no">
+      <div class="gist-data">
+        <div class="js-gist-file-update-container js-task-list-container file-box">
+  <div id="file-config-json" class="file my-2">
+    
+    <div itemprop="text" class="Box-body p-0 blob-wrapper data type-json  ">
+
+        
+<div class="js-check-bidi js-blob-code-container blob-code-content">
+
+  <template class="js-file-alert-template"></template>
+<template class="js-line-alert-template"></template>
+
+  <table data-hpc="" class="highlight tab-size js-file-line-container js-code-nav-container js-tagsearch-file" data-tab-size="8" data-paste-markdown-skip="" data-tagsearch-lang="JSON" data-tagsearch-path="config.json">
+        <tbody><tr>
+          <td id="file-config-json-L1" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="1"></td>
+          <td id="file-config-json-LC1" class="blob-code blob-code-inner js-file-line">{</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L2" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="2"></td>
+          <td id="file-config-json-LC2" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">"inbounds"</span>: [</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L3" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="3"></td>
+          <td id="file-config-json-LC3" class="blob-code blob-code-inner js-file-line">    {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L4" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="4"></td>
+          <td id="file-config-json-LC4" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"listen"</span>: <span class="pl-s"><span class="pl-pds">"</span>0.0.0.0<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L5" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="5"></td>
+          <td id="file-config-json-LC5" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"port"</span>: <span class="pl-c1">1310</span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L6" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="6"></td>
+          <td id="file-config-json-LC6" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"protocol"</span>: <span class="pl-s"><span class="pl-pds">"</span>vmess<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L7" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="7"></td>
+          <td id="file-config-json-LC7" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"settings"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L8" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="8"></td>
+          <td id="file-config-json-LC8" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"clients"</span>: [</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L9" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="9"></td>
+          <td id="file-config-json-LC9" class="blob-code blob-code-inner js-file-line">          {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L10" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="10"></td>
+          <td id="file-config-json-LC10" class="blob-code blob-code-inner js-file-line">            <span class="pl-ent">"id"</span>: <span class="pl-s"><span class="pl-pds">"</span>00000000-0000-0000-0000-000000000000<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L11" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="11"></td>
+          <td id="file-config-json-LC11" class="blob-code blob-code-inner js-file-line">            <span class="pl-ent">"alterId"</span>: <span class="pl-c1">0</span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L12" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="12"></td>
+          <td id="file-config-json-LC12" class="blob-code blob-code-inner js-file-line">            <span class="pl-ent">"security"</span>: <span class="pl-s"><span class="pl-pds">"</span>auto<span class="pl-pds">"</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L13" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="13"></td>
+          <td id="file-config-json-LC13" class="blob-code blob-code-inner js-file-line">          }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L14" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="14"></td>
+          <td id="file-config-json-LC14" class="blob-code blob-code-inner js-file-line">        ]</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L15" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="15"></td>
+          <td id="file-config-json-LC15" class="blob-code blob-code-inner js-file-line">      },</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L16" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="16"></td>
+          <td id="file-config-json-LC16" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"streamSettings"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L17" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="17"></td>
+          <td id="file-config-json-LC17" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"network"</span>: <span class="pl-s"><span class="pl-pds">"</span>ws<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L18" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="18"></td>
+          <td id="file-config-json-LC18" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"wsSettings"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L19" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="19"></td>
+          <td id="file-config-json-LC19" class="blob-code blob-code-inner js-file-line">          <span class="pl-ent">"path"</span>: <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L20" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="20"></td>
+          <td id="file-config-json-LC20" class="blob-code blob-code-inner js-file-line">        }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L21" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="21"></td>
+          <td id="file-config-json-LC21" class="blob-code blob-code-inner js-file-line">      },</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L22" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="22"></td>
+          <td id="file-config-json-LC22" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"mux"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L23" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="23"></td>
+          <td id="file-config-json-LC23" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"enabled"</span>: <span class="pl-c1">true</span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L24" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="24"></td>
+          <td id="file-config-json-LC24" class="blob-code blob-code-inner js-file-line">      },</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L25" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="25"></td>
+          <td id="file-config-json-LC25" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"sniffing"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L26" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="26"></td>
+          <td id="file-config-json-LC26" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"enabled"</span>: <span class="pl-c1">true</span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L27" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="27"></td>
+          <td id="file-config-json-LC27" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"destOverride"</span>: [<span class="pl-s"><span class="pl-pds">"</span>http<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>tls<span class="pl-pds">"</span></span>]</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L28" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="28"></td>
+          <td id="file-config-json-LC28" class="blob-code blob-code-inner js-file-line">      }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L29" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="29"></td>
+          <td id="file-config-json-LC29" class="blob-code blob-code-inner js-file-line">    }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L30" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="30"></td>
+          <td id="file-config-json-LC30" class="blob-code blob-code-inner js-file-line">  ],</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L31" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="31"></td>
+          <td id="file-config-json-LC31" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">"outbounds"</span>: [</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L32" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="32"></td>
+          <td id="file-config-json-LC32" class="blob-code blob-code-inner js-file-line">    {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L33" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="33"></td>
+          <td id="file-config-json-LC33" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"protocol"</span>: <span class="pl-s"><span class="pl-pds">"</span>freedom<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L34" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="34"></td>
+          <td id="file-config-json-LC34" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"tag"</span>: <span class="pl-s"><span class="pl-pds">"</span>direct<span class="pl-pds">"</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L35" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="35"></td>
+          <td id="file-config-json-LC35" class="blob-code blob-code-inner js-file-line">    },</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L36" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="36"></td>
+          <td id="file-config-json-LC36" class="blob-code blob-code-inner js-file-line">    {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L37" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="37"></td>
+          <td id="file-config-json-LC37" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"protocol"</span>: <span class="pl-s"><span class="pl-pds">"</span>socks<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L38" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="38"></td>
+          <td id="file-config-json-LC38" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"tag"</span>: <span class="pl-s"><span class="pl-pds">"</span>warp<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L39" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="39"></td>
+          <td id="file-config-json-LC39" class="blob-code blob-code-inner js-file-line">      <span class="pl-ent">"settings"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L40" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="40"></td>
+          <td id="file-config-json-LC40" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"servers"</span>: [</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L41" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="41"></td>
+          <td id="file-config-json-LC41" class="blob-code blob-code-inner js-file-line">          {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L42" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="42"></td>
+          <td id="file-config-json-LC42" class="blob-code blob-code-inner js-file-line">            <span class="pl-ent">"address"</span>: <span class="pl-s"><span class="pl-pds">"</span>warp<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L43" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="43"></td>
+          <td id="file-config-json-LC43" class="blob-code blob-code-inner js-file-line">            <span class="pl-ent">"port"</span>: <span class="pl-c1">1080</span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L44" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="44"></td>
+          <td id="file-config-json-LC44" class="blob-code blob-code-inner js-file-line">          }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L45" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="45"></td>
+          <td id="file-config-json-LC45" class="blob-code blob-code-inner js-file-line">        ]</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L46" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="46"></td>
+          <td id="file-config-json-LC46" class="blob-code blob-code-inner js-file-line">      }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L47" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="47"></td>
+          <td id="file-config-json-LC47" class="blob-code blob-code-inner js-file-line">    }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L48" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="48"></td>
+          <td id="file-config-json-LC48" class="blob-code blob-code-inner js-file-line">  ],</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L49" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="49"></td>
+          <td id="file-config-json-LC49" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">"dns"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L50" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="50"></td>
+          <td id="file-config-json-LC50" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">"servers"</span>: [</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L51" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="51"></td>
+          <td id="file-config-json-LC51" class="blob-code blob-code-inner js-file-line">      <span class="pl-s"><span class="pl-pds">"</span>1.1.1.1<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L52" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="52"></td>
+          <td id="file-config-json-LC52" class="blob-code blob-code-inner js-file-line">      <span class="pl-s"><span class="pl-pds">"</span>1.0.0.1<span class="pl-pds">"</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L53" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="53"></td>
+          <td id="file-config-json-LC53" class="blob-code blob-code-inner js-file-line">    ]</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L54" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="54"></td>
+          <td id="file-config-json-LC54" class="blob-code blob-code-inner js-file-line">  },</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L55" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="55"></td>
+          <td id="file-config-json-LC55" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">"routing"</span>: {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L56" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="56"></td>
+          <td id="file-config-json-LC56" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">"rules"</span>: [</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L57" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="57"></td>
+          <td id="file-config-json-LC57" class="blob-code blob-code-inner js-file-line">      {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L58" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="58"></td>
+          <td id="file-config-json-LC58" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"type"</span>: <span class="pl-s"><span class="pl-pds">"</span>field<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L59" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="59"></td>
+          <td id="file-config-json-LC59" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"ip"</span>: [<span class="pl-s"><span class="pl-pds">"</span>geoip:private<span class="pl-pds">"</span></span>],</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L60" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="60"></td>
+          <td id="file-config-json-LC60" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"outboundTag"</span>: <span class="pl-s"><span class="pl-pds">"</span>direct<span class="pl-pds">"</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L61" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="61"></td>
+          <td id="file-config-json-LC61" class="blob-code blob-code-inner js-file-line">      },</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L62" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="62"></td>
+          <td id="file-config-json-LC62" class="blob-code blob-code-inner js-file-line">      {</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L63" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="63"></td>
+          <td id="file-config-json-LC63" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"type"</span>: <span class="pl-s"><span class="pl-pds">"</span>field<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L64" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="64"></td>
+          <td id="file-config-json-LC64" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"outboundTag"</span>: <span class="pl-s"><span class="pl-pds">"</span>warp<span class="pl-pds">"</span></span>,</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L65" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="65"></td>
+          <td id="file-config-json-LC65" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">"network"</span>: <span class="pl-s"><span class="pl-pds">"</span>udp,tcp<span class="pl-pds">"</span></span></td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L66" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="66"></td>
+          <td id="file-config-json-LC66" class="blob-code blob-code-inner js-file-line">      }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L67" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="67"></td>
+          <td id="file-config-json-LC67" class="blob-code blob-code-inner js-file-line">    ]</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L68" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="68"></td>
+          <td id="file-config-json-LC68" class="blob-code blob-code-inner js-file-line">  }</td>
+        </tr>
+        <tr>
+          <td id="file-config-json-L69" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="69"></td>
+          <td id="file-config-json-LC69" class="blob-code blob-code-inner js-file-line">}</td>
+        </tr>
+  </tbody></table>
+</div>
+
+
+    </div>
+
+  </div>
+</div>
+
+      </div>
+      <div class="gist-meta">
+        <a href="https://gist.github.com/notawho/c24de5b97b9978ce6086155fe5e0da71/raw/37da2c1c87141499dd2fc78f9351495cca05ef60/config.json" style="float:right">view raw</a>
+        <a href="https://gist.github.com/notawho/c24de5b97b9978ce6086155fe5e0da71#file-config-json">
+          config.json
+        </a>
+        hosted with ❤ by <a class="Link--inTextBlock" href="https://github.com/">GitHub</a>
+      </div>
+    </div>
+</div>
+
+<p>That's all, run <code>docker compose up -d</code> and V2Ray is launched, the only thing left is to set up a proxy server. We're using NGINX in production, so there's part of our configuration file:</p>
+<script src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/c24de5b97b9978ce6086155fe5e0da71.js(2).download"></script><link rel="stylesheet" href="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/gist-embed-dc3feb7a9d65.css"><div id="gist123920615" class="gist">
+    <div class="gist-file" translate="no">
+      <div class="gist-data">
+        <div class="js-gist-file-update-container js-task-list-container file-box">
+  <div id="file-mydomain-local-conf" class="file my-2">
+    
+    <div itemprop="text" class="Box-body p-0 blob-wrapper data type-text  ">
+
+        
+<div class="js-check-bidi js-blob-code-container blob-code-content">
+
+  <template class="js-file-alert-template"></template>
+<template class="js-line-alert-template"></template>
+
+  <table data-hpc="" class="highlight tab-size js-file-line-container js-code-nav-container js-tagsearch-file" data-tab-size="8" data-paste-markdown-skip="" data-tagsearch-lang="" data-tagsearch-path="mydomain.local.conf">
+        <tbody><tr>
+          <td id="file-mydomain-local-conf-L1" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="1"></td>
+          <td id="file-mydomain-local-conf-LC1" class="blob-code blob-code-inner js-file-line">server {</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L2" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="2"></td>
+          <td id="file-mydomain-local-conf-LC2" class="blob-code blob-code-inner js-file-line">  listen 443 ssl;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L3" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="3"></td>
+          <td id="file-mydomain-local-conf-LC3" class="blob-code blob-code-inner js-file-line">  http2 on;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L4" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="4"></td>
+          <td id="file-mydomain-local-conf-LC4" class="blob-code blob-code-inner js-file-line">
+</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L5" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="5"></td>
+          <td id="file-mydomain-local-conf-LC5" class="blob-code blob-code-inner js-file-line">  server_name v2ray.mydomain.local;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L6" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="6"></td>
+          <td id="file-mydomain-local-conf-LC6" class="blob-code blob-code-inner js-file-line">
+</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L7" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="7"></td>
+          <td id="file-mydomain-local-conf-LC7" class="blob-code blob-code-inner js-file-line">  ssl_certificate /etc/letsencrypt/live/mydomain.local/fullchain.pem;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L8" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="8"></td>
+          <td id="file-mydomain-local-conf-LC8" class="blob-code blob-code-inner js-file-line">  ssl_certificate_key /etc/letsencrypt/live/mydomain.local/privkey.pem;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L9" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="9"></td>
+          <td id="file-mydomain-local-conf-LC9" class="blob-code blob-code-inner js-file-line">
+</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L10" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="10"></td>
+          <td id="file-mydomain-local-conf-LC10" class="blob-code blob-code-inner js-file-line">  # ...</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L11" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="11"></td>
+          <td id="file-mydomain-local-conf-LC11" class="blob-code blob-code-inner js-file-line">
+</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L12" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="12"></td>
+          <td id="file-mydomain-local-conf-LC12" class="blob-code blob-code-inner js-file-line">  location /admin {</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L13" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="13"></td>
+          <td id="file-mydomain-local-conf-LC13" class="blob-code blob-code-inner js-file-line">    if ($http_upgrade != "websocket") {</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L14" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="14"></td>
+          <td id="file-mydomain-local-conf-LC14" class="blob-code blob-code-inner js-file-line">      return 444;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L15" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="15"></td>
+          <td id="file-mydomain-local-conf-LC15" class="blob-code blob-code-inner js-file-line">    }</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L16" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="16"></td>
+          <td id="file-mydomain-local-conf-LC16" class="blob-code blob-code-inner js-file-line">  </td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L17" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="17"></td>
+          <td id="file-mydomain-local-conf-LC17" class="blob-code blob-code-inner js-file-line">    proxy_set_header Host $http_host;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L18" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="18"></td>
+          <td id="file-mydomain-local-conf-LC18" class="blob-code blob-code-inner js-file-line">    proxy_set_header Upgrade $http_upgrade;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L19" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="19"></td>
+          <td id="file-mydomain-local-conf-LC19" class="blob-code blob-code-inner js-file-line">    proxy_set_header Connection "upgrade";</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L20" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="20"></td>
+          <td id="file-mydomain-local-conf-LC20" class="blob-code blob-code-inner js-file-line">
+</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L21" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="21"></td>
+          <td id="file-mydomain-local-conf-LC21" class="blob-code blob-code-inner js-file-line">    proxy_http_version 1.1;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L22" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="22"></td>
+          <td id="file-mydomain-local-conf-LC22" class="blob-code blob-code-inner js-file-line">    proxy_buffering off;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L23" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="23"></td>
+          <td id="file-mydomain-local-conf-LC23" class="blob-code blob-code-inner js-file-line">    proxy_redirect off;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L24" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="24"></td>
+          <td id="file-mydomain-local-conf-LC24" class="blob-code blob-code-inner js-file-line">
+</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L25" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="25"></td>
+          <td id="file-mydomain-local-conf-LC25" class="blob-code blob-code-inner js-file-line">    proxy_pass http://127.0.0.1:1031/;</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L26" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="26"></td>
+          <td id="file-mydomain-local-conf-LC26" class="blob-code blob-code-inner js-file-line">  }</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L27" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="27"></td>
+          <td id="file-mydomain-local-conf-LC27" class="blob-code blob-code-inner js-file-line">
+</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L28" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="28"></td>
+          <td id="file-mydomain-local-conf-LC28" class="blob-code blob-code-inner js-file-line">  # ...</td>
+        </tr>
+        <tr>
+          <td id="file-mydomain-local-conf-L29" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="29"></td>
+          <td id="file-mydomain-local-conf-LC29" class="blob-code blob-code-inner js-file-line">}</td>
+        </tr>
+  </tbody></table>
+</div>
+
+
+    </div>
+
+  </div>
+</div>
+
+      </div>
+      <div class="gist-meta">
+        <a href="https://gist.github.com/notawho/c24de5b97b9978ce6086155fe5e0da71/raw/37da2c1c87141499dd2fc78f9351495cca05ef60/mydomain.local.conf" style="float:right">view raw</a>
+        <a href="https://gist.github.com/notawho/c24de5b97b9978ce6086155fe5e0da71#file-mydomain-local-conf">
+          mydomain.local.conf
+        </a>
+        hosted with ❤ by <a class="Link--inTextBlock" href="https://github.com/">GitHub</a>
+      </div>
+    </div>
+</div>
+
+<p>After you finished the proxy server setup, you need to create an "A" record in Cloudflare (or in any other domain registrar you use), I don't think that we need to explain how to do this to you. We personally use Cloudflare to manage our DNS records and protect them from DDOS.</p>
+<hr>
+<h3 id="conclusion">Conclusion</h3>
+<p>Thanks for reading! This is our first V2Ray setup made in just 5 minutes. We'd love to receive your feedback on this setup!</p>
+</section>
+</article>
+</main>
+<section class="footer-cta outer">
+<div class="inner">
+<h2 class="footer-cta-title">Sign up for more like this.</h2>
+<a class="footer-cta-button gh-portal-close" href="https://blog.akame.moe/warp-over-v2ray/#/portal" data-portal="">
+<div class="footer-cta-input">Enter your email</div>
+<span>Subscribe</span>
+</a>
+</div>
+</section>
+</div>
+<footer class="site-footer outer">
+<div class="inner">
+<section class="copyright"><a href="https://blog.akame.moe/">akame's blog</a> © 2023</section>
+<nav class="site-footer-nav">
+<ul class="nav">
+<li class="nav-sign-up"><a href="https://blog.akame.moe/warp-over-v2ray/#/portal/">Sign up</a></li>
+</ul>
+</nav>
+<div class="gh-powered-by"><a href="https://ghost.org/" target="_blank" rel="noopener">Powered by Ghost</a></div>
+</div>
+</footer>
+</div>
+<script src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/jquery-3.5.1.min.js.download" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous">
+</script>
+<script src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/casper.js.download"></script>
+<script>
+$(document).ready(function () {
+    // Mobile Menu Trigger
+    $('.gh-burger').click(function () {
+        $('body').toggleClass('gh-head-open');
+    });
+    // FitVids - Makes video embeds responsive
+    $(".gh-content").fitVids();
+});
+</script>
+<script defer="" data-domain="blog.akame.moe" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/script.js.download"></script>
+
+
+<div id="ghost-portal-root"><iframe data-testid="portal-trigger-frame" title="portal-trigger" frameborder="0" class="gh-portal-triggerbtn-iframe" style="z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 183px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s ease 0s; overflow: hidden;" src="./Setting up Warp over V2Ray in Docker with Cloudflare &amp; nginx in 5 minutes_files/saved_resource.html"></iframe></div><div id="sodo-search-root"></div></body></html>
